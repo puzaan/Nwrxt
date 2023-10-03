@@ -8,11 +8,10 @@ export const roomServiceApi = createApi({
   tagTypes: ['room'],
   endpoints: (builder) => ({
     getAllRooms: builder.query({
-      query: () => ({
-        url: '/room/list'
-      }),
+      query: () => '/room/list',
       providesTags: ['room']
     }),
+
     getRoomById: builder.query({
       query: (query) => ({
         url: `/room/${query.id}`
@@ -45,4 +44,4 @@ export const roomServiceApi = createApi({
   })
 });
 
-export const { useDeleteRoomById, useCreateRoom, useGetRoomById, useGetAllRooms } = roomServiceApi;
+export const { useDeleteRoomByIdQuery, useCreateRoomQuery, useGetRoomByIdQuery, useGetAllRoomsQuery } = roomServiceApi;

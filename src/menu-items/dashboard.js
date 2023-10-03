@@ -44,7 +44,7 @@ const dashboard = {
       id: 'room',
       title: 'Room',
       type: 'item',
-      url: '/dashboard/default',
+      url: '/room-view',
       icon: icons.WalletOutlined,
       breadcrumbs: false
     }

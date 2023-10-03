@@ -45,4 +45,5 @@ export const houseServiceApi = createApi({
   })
 });
 
-export const { useDeleteHouseServiceById, useCreateHouseService, useGetHouseServiceById, useGetAllHouseServices } = houseServiceApi;
+export const { useDeleteHouseServiceByIdQuery, useCreateHouseServiceQuery, useGetHouseServiceByIdQuery, useGetAllHouseServicesQuery } =
+  houseServiceApi;

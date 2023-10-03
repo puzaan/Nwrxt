@@ -25,14 +25,19 @@ import MonthlyBarChart from './MonthlyBarChart';
 import ReportAreaChart from './ReportAreaChart';
 import SalesColumnChart from './SalesColumnChart';
 import MainCard from 'components/MainCard';
-import AnalyticEcommerce from 'components/cards/statistics/AnalyticEcommerce';
-
+import ServiceCard from 'components/cards/statistics/ServiceCard';
+import UserCard from 'components/cards/statistics/UserCard';
+import RoomCard from 'components/cards/statistics/RoomCard';
+import BillCard from 'components/cards/statistics/BillCard';
+import Loder from 'components/Loder/Loder';
 // assets
 import { GiftOutlined, MessageOutlined, SettingOutlined } from '@ant-design/icons';
 import avatar1 from 'assets/images/users/avatar-1.png';
 import avatar2 from 'assets/images/users/avatar-2.png';
 import avatar3 from 'assets/images/users/avatar-3.png';
 import avatar4 from 'assets/images/users/avatar-4.png';
+
+import { useGetAllRoomsQuery } from 'store/reducers/room';
 
 // avatar style
 const avatarSX = {
@@ -73,6 +78,11 @@ const DashboardDefault = () => {
   const [value, setValue] = useState('today');
   const [slot, setSlot] = useState('week');
 
+  const { data, isLoading: roomLoading } = useGetAllRoomsQuery();
+  if (!roomLoading) {
+    console.log(data);
+  }
+
   return (
     <Grid container rowSpacing={4.5} columnSpacing={2.75}>
       {/* row 1 */}
@@ -80,16 +90,20 @@ const DashboardDefault = () => {
         <Typography variant="h5">Dashboard</Typography>
       </Grid>
       <Grid item xs={12} sm={6} md={4} lg={3}>
-        <AnalyticEcommerce title="Total Page Views" count="4,42,236" percentage={59.3} extra="35,000" />
+        <UserCard title="Total User" count={442236} link="/" />
       </Grid>
       <Grid item xs={12} sm={6} md={4} lg={3}>
-        <AnalyticEcommerce title="Total Users" count="78,250" percentage={70.5} extra="8,900" />
+        <ServiceCard title="Total House Services" count={4000} link="/" />
       </Grid>
       <Grid item xs={12} sm={6} md={4} lg={3}>
-        <AnalyticEcommerce title="Total Order" count="18,800" percentage={27.4} isLoss color="warning" extra="1,943" />
+        <BillCard title="Unpaid Bill List" count={100} link="/" />
       </Grid>
       <Grid item xs={12} sm={6} md={4} lg={3}>
-        <AnalyticEcommerce title="Total Sales" count="$35,078" percentage={27.4} isLoss color="warning" extra="$20,395" />
+        {roomLoading ? (
+          <Loder type="spinningBubbles" width="50px" height="50px" color="#434343" />
+        ) : (
+          <RoomCard title="Total Rooms" count={data.data.length} link="/" />
+        )}
       </Grid>
 
       <Grid item md={8} sx={{ display: { sm: 'none', md: 'block', lg: 'none' } }} />

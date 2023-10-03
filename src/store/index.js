@@ -9,7 +9,7 @@ import { houseServiceApi } from './reducers/house';
 
 // ==============================|| REDUX TOOLKIT - MAIN STORE ||============================== //
 
-const store = configureStore({
+export const store = configureStore({
   reducer: {
     menu,
     [roomServiceApi.reducerPath]: roomServiceApi.reducer,
@@ -18,6 +18,6 @@ const store = configureStore({
   middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat([roomServiceApi.middleware, houseServiceApi.middleware])
 });
 
-const { dispatch } = store;
+// const { dispatch } = store;
 
-export { store, dispatch };
+// export { store, dispatch };

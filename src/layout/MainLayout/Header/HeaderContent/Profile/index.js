@@ -16,7 +16,8 @@ import {
   Stack,
   Tab,
   Tabs,
-  Typography
+  Typography,
+  useMediaQuery
 } from '@mui/material';
 
 // project import
@@ -60,6 +61,7 @@ const Profile = () => {
     // logout
   };
 
+  const matchesXs = useMediaQuery((theme) => theme.breakpoints.down('md'));
   const anchorRef = useRef(null);
   const [open, setOpen] = useState(false);
   const handleToggle = () => {
@@ -98,7 +100,7 @@ const Profile = () => {
       >
         <Stack direction="row" spacing={2} alignItems="center" sx={{ p: 0.5 }}>
           <Avatar alt="profile user" src={avatar1} sx={{ width: 32, height: 32 }} />
-          <Typography variant="subtitle1">Pujan Shrestha</Typography>
+          {!matchesXs && <Typography variant="subtitle1">Pujan Shrestha</Typography>}
         </Stack>
       </ButtonBase>
       <Popper

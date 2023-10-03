@@ -23,13 +23,13 @@ const container = document.getElementById('root');
 const root = createRoot(container); // createRoot(container!) if you use TypeScript
 root.render(
   <StrictMode>
-    <ReduxProvider store={store}>
-      <HelmetProvider>
-        <BrowserRouter>
+    <HelmetProvider>
+      <BrowserRouter>
+        <ReduxProvider store={store}>
           <App />
-        </BrowserRouter>
-      </HelmetProvider>
-    </ReduxProvider>
+        </ReduxProvider>
+      </BrowserRouter>
+    </HelmetProvider>
   </StrictMode>
 );
 

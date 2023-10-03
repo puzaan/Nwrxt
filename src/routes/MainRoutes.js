@@ -17,6 +17,8 @@ const Typography = Loadable(lazy(() => import('pages/components-overview/Typogra
 const Color = Loadable(lazy(() => import('pages/components-overview/Color')));
 const Shadow = Loadable(lazy(() => import('pages/components-overview/Shadow')));
 const AntIcons = Loadable(lazy(() => import('pages/components-overview/AntIcons')));
+const RoomView = Loadable(lazy(() => import('pages/roomList/RoomView')));
+const Account = Loadable(lazy(() => import('pages/account/Account')));
 
 // ==============================|| MAIN ROUTING ||============================== //
 
@@ -44,6 +46,14 @@ const MainRoutes = {
     {
       path: 'service',
       element: <Service />
+    },
+    {
+      path: 'room-view',
+      element: <RoomView />
+    },
+    {
+      path: 'account-view',
+      element: <Account />
     },
     {
       path: 'sample-page',
