@@ -10,4 +10,10 @@ Loder.propTypes = {
   width: PropTypes.string,
   height: PropTypes.string
 };
+Loder.DefaultProps = {
+  type: 'spin',
+  color: '#00BFFF',
+  width: '15%',
+  height: '2%'
+};
 export default Loder;

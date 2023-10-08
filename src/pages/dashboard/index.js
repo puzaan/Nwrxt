@@ -93,7 +93,7 @@ const DashboardDefault = () => {
         <UserCard title="Total User" count={442236} link="/" />
       </Grid>
       <Grid item xs={12} sm={6} md={4} lg={3}>
-        <ServiceCard title="Total House Services" count={4000} link="/" />
+        <ServiceCard title="Total House Services" count={4000} link="/service" />
       </Grid>
       <Grid item xs={12} sm={6} md={4} lg={3}>
         <BillCard title="Unpaid Bill List" count={100} link="/" />
@@ -102,7 +102,7 @@ const DashboardDefault = () => {
         {roomLoading ? (
           <Loder type="spinningBubbles" width="50px" height="50px" color="#434343" />
         ) : (
-          <RoomCard title="Total Rooms" count={data.data.length} link="/" />
+          <RoomCard title="Total Rooms" count={data.data.length} link="/room-view" />
         )}
       </Grid>
 

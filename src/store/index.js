@@ -4,6 +4,7 @@ import { configureStore } from '@reduxjs/toolkit';
 // project import
 // import reducers from './reducers';
 import menu from './reducers/menu';
+import dailogOpen from './reducers/dialogOpen';
 import { roomServiceApi } from './reducers/room';
 import { houseServiceApi } from './reducers/house';
 
@@ -12,6 +13,7 @@ import { houseServiceApi } from './reducers/house';
 export const store = configureStore({
   reducer: {
     menu,
+    dailogOpen,
     [roomServiceApi.reducerPath]: roomServiceApi.reducer,
     [houseServiceApi.reducerPath]: houseServiceApi.reducer
   },
