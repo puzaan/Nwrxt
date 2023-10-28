@@ -21,12 +21,12 @@ export const roomServiceApi = createApi({
     createRoom: builder.mutation({
       query: (query) => ({
         url: '/room/save',
-        body: query.body,
-        method: 'POST'
+        method: 'POST',
+        body: query.body
       }),
-      invalidatesTages: ['order']
+      invalidatesTages: ['room']
     }),
-    deleteRoomByid: builder.mutation({
+    deleteRoomById: builder.mutation({
       query: (query) => ({
         url: `/room/${query.id}`,
         method: 'DELETE'
@@ -44,4 +44,5 @@ export const roomServiceApi = createApi({
   })
 });
 
-export const { useDeleteRoomByIdQuery, useCreateRoomQuery, useGetRoomByIdQuery, useGetAllRoomsQuery } = roomServiceApi;
+export const { useUpdateRoomByIdMutation, useDeleteRoomByIdMutation, useCreateRoomMutation, useGetRoomByIdQuery, useGetAllRoomsQuery } =
+  roomServiceApi;

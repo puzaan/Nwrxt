@@ -1,5 +1,5 @@
 import React from 'react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 import {
   Stack,
@@ -15,57 +15,30 @@ import {
   AlertTitle,
   Box,
   DialogTitle,
-  Slide
+  Slide,
+  Snackbar
 } from '@mui/material';
 import Alert from '@mui/material/Alert';
 
 import { useFormik, Form, FormikProvider } from 'formik';
 import * as Yup from 'yup';
 
+import { useCreateRoomMutation } from 'store/reducers/room';
+
 import ArrowUpOnSquareIcon from '@heroicons/react/24/solid/ArrowUpOnSquareIcon';
 import ArrowDownOnSquareIcon from '@heroicons/react/24/solid/ArrowDownOnSquareIcon';
 import PlusIcon from '@heroicons/react/24/solid/PlusIcon';
 import Loder from 'components/Loder/Loder';
-// import CreateRoom from './CreateRoom';
 
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
 });
 export const Header = () => {
-  const RegisterSchema = Yup.object().shape({
-    fullName: Yup.string().min(2, 'Too Short!').max(50, 'Too Long!').required('Enter your name'),
-    address: Yup.string().min(2, 'Too Short!').max(50, 'Too Long!').required('Address is required'),
-    emailId: Yup.string().email('Email must be a valid email address').required('Email is required'),
-    password: Yup.string().required('Password is required'),
-    gender: Yup.string().required('Please select your gender'),
-    contactNumber: Yup.string().required('Enter your contact Number')
-  });
+  const [snackbar, setSnackbar] = useState(false);
 
-  const formik = useFormik({
-    initialValues: {
-      fullName: '',
-      emailId: '',
-      password: '',
-      contactNumber: '',
-      gender: '',
-      address: ''
-    },
-    validationSchema: RegisterSchema,
-    onSubmit: () => {
-      // dispatch(
-      //   CreateAdmin(
-      //     formik.values.fullName,
-      //     formik.values.gender,
-      //     formik.values.address,
-      //     formik.values.contactNumber,
-      //     formik.values.emailId,
-      //     formik.values.password
-      //   )
-      // );
-    }
-  });
+  const [createRoom, { isLoading, isError, error, isSuccess }] = useCreateRoomMutation();
 
-  const { errors, touched, handleSubmit, getFieldProps } = formik;
+  // const decimal = /^[-+]?[0-9]+\.[0-9]+$/;
 
   const [open, setOpen] = useState(false);
   const handleClickOpen = () => {
@@ -74,6 +47,58 @@ export const Header = () => {
   const handleClose = () => {
     setOpen(false);
   };
+
+  const handleCloseSnackbar = () => {
+    setSnackbar(false);
+  };
+
+  const RegisterSchema = Yup.object().shape({
+    roomId: Yup.string().required('Room ID is required'),
+    floor: Yup.string().required('Floor is required'),
+    roomTypes: Yup.string().required('Room Type is required'),
+    roomprice: Yup.number().required('Room Price is required')
+  });
+
+  const formik = useFormik({
+    initialValues: {
+      roomId: '',
+      floor: '',
+      roomTypes: '',
+      roomprice: 0
+    },
+    validationSchema: RegisterSchema,
+    onSubmit: async () => {
+      const savedata = {
+        roomId: formik.values.roomId,
+        floor: formik.values.floor,
+        roomTypes: formik.values.roomTypes,
+        roomprice: formik.values.roomprice
+      };
+      try {
+        await createRoom({ body: savedata });
+        if (isSuccess) {
+          handleClose();
+          setSnackbar(true);
+          resetForm();
+        }
+      } catch (err) {
+        console.log(err);
+      }
+    }
+  });
+  useEffect(() => {
+    if (isSuccess) {
+      handleClose();
+      setSnackbar(true);
+      formik.values.roomId = '';
+      formik.values.roomTypes = '';
+      formik.values.roomprice = 0;
+      formik.values.floor = '';
+      window.location.reload();
+    }
+  }, [isSuccess]);
+
+  const { errors, touched, handleSubmit, getFieldProps } = formik;
   return (
     <Stack direction="row" justifyContent="space-between" spacing={4}>
       <Stack spacing={1}>
@@ -82,7 +107,7 @@ export const Header = () => {
           <Button
             color="inherit"
             startIcon={
-              <SvgIcon fontSize="small">
+              <SvgIcon fontSize={'small'}>
                 <ArrowUpOnSquareIcon />
               </SvgIcon>
             }
@@ -123,111 +148,109 @@ export const Header = () => {
         sx={{ backdropFilter: 'blur(5px)' }}
       >
         <DialogTitle>
-          <Typography variant="h3" align="center">
-            Create Room
-          </Typography>
+          <Typography align="center">Create Room</Typography>
         </DialogTitle>
         <DialogContent>
-          {/* <DialogContentText id="alert-dialog-slide-description">
-            Let Google help apps determine location. This means sending anonymous location data to Google, even when no apps are running.
-          </DialogContentText> */}
           <FormikProvider value={formik}>
-            {/* {error && ( */}
-            <Stack sx={{ width: '100%', marginBottom: 4 }} spacing={2}>
-              <Alert severity="error">
-                <AlertTitle>Error</AlertTitle>
-                error
-                <strong>Try Again!!</strong>
-              </Alert>
-            </Stack>
-            {/* )} */}
-            <Form autoComplete="off" noValidate onSubmit={handleSubmit}>
-              <Stack spacing={3}>
+            {isError && (
+              <Stack sx={{ width: '100%', marginBottom: 4 }} spacing={2}>
+                <Alert severity="error">
+                  <AlertTitle>Error</AlertTitle>
+                  {error.data}
+                  <strong>Try Again!!</strong>
+                </Alert>
+              </Stack>
+            )}
+            <Form autoComplete="off" noValidateon Submit={handleSubmit}>
+              <Stack spacing={3} marginTop={2}>
+                <Stack>
+                  <TextField
+                    fullWidth
+                    label="Room Id"
+                    {...getFieldProps('roomId')}
+                    error={Boolean(touched.roomId && errors.roomId)}
+                    helperText={touched.roomId && errors.roomId}
+                  />
+                </Stack>
+                <TextField
+                  select
+                  label="Select Floor"
+                  variant="outlined"
+                  name={'floor'}
+                  fullWidth
+                  value={formik.values.floor}
+                  onChange={formik.handleChange}
+                  error={Boolean(touched.floor && errors.floor)}
+                  helperText={touched.floor && errors.floor}
+                >
+                  {['GROUND_FLOOR', 'FIRST_FLOOR', 'SECOND_FLOOR', 'THIRE_FLOOR'].map((option) => (
+                    <MenuItem key={option} value={option}>
+                      {option}
+                    </MenuItem>
+                  ))}
+                </TextField>
+
                 <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
                   <TextField
                     fullWidth
-                    autoComplete="username"
-                    label="Full Name"
-                    {...getFieldProps('fullName')}
-                    error={Boolean(touched.fullName && errors.fullName)}
-                    helperText={touched.fullName && errors.fullName}
+                    type="number"
+                    label="Room Price"
+                    {...getFieldProps('roomprice')}
+                    error={Boolean(touched.roomprice && errors.roomprice)}
+                    helperText={touched.roomprice && errors.roomprice}
                   />
-
                   <TextField
                     select
-                    label="Select gender"
+                    label="Select Room Type"
                     variant="outlined"
-                    name={'gender'}
+                    name={'roomTypes'}
                     fullWidth
-                    value={formik.values.gender}
+                    value={formik.values.roomTypes}
                     onChange={formik.handleChange}
-                    error={Boolean(touched.gender && errors.gender)}
-                    helperText={touched.gender && errors.gender}
+                    error={Boolean(touched.roomTypes && errors.roomTypes)}
+                    helperText={touched.roomTypes && errors.roomTypes}
                   >
-                    {['MALE', 'FEMALE', 'OTHER'].map((option) => (
+                    {['SINGLE_ROOM', 'DOUBLE_ROOM', 'FLATS'].map((option) => (
                       <MenuItem key={option} value={option}>
                         {option}
                       </MenuItem>
                     ))}
                   </TextField>
                 </Stack>
-                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-                  <TextField
-                    fullWidth
-                    label="Address"
-                    {...getFieldProps('address')}
-                    error={Boolean(touched.address && errors.address)}
-                    helperText={touched.address && errors.address}
-                  />
-                </Stack>
 
-                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-                  <TextField
-                    fullWidth
-                    type="email"
-                    label="Email address"
-                    {...getFieldProps('emailId')}
-                    error={Boolean(touched.emailId && errors.emailId)}
-                    helperText={touched.emailId && errors.emailId}
-                  />
-                  <TextField
-                    fullWidth
-                    label="Password"
-                    {...getFieldProps('password')}
-                    error={Boolean(touched.password && errors.password)}
-                    helperText={touched.password && errors.password}
-                  />
-                </Stack>
-                {/* {loading && ( */}
-                <Box
-                  sx={{
-                    display: 'flex',
-                    justifyContent: 'center',
-                    marginBottom: 3
-                  }}
-                >
-                  <Loder type="spin" color="#00BFFF" width="15%" height="2%" />
-                </Box>
-                {/* )} */}
-
-                {/* <LoadingButton size="mideum" type="submit" variant="contained">
-                  Create
-                </LoadingButton> */}
-                {/* <Button>Agree</Button>
-                <Button onClick={handleClose}>Disagree</Button> */}
+                {isLoading && (
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'center',
+                      marginBottom: 3
+                    }}
+                  >
+                    <Loder type="spin" color="#00BFFF" width="15%" height="2%" />
+                  </Box>
+                )}
               </Stack>
               <DialogActions>
-                <Button onClick={handleClose}>Disagree</Button>
-                <Button type="submit">Agree</Button>
+                <Button type="submit" variant="contained" color="primary" disable={isLoading}>
+                  Create
+                </Button>
+                <Button onClick={handleClose}>Close</Button>
               </DialogActions>
             </Form>
           </FormikProvider>
         </DialogContent>
-        {/* <DialogActions>
-          <Button onClick={handleClose}>Disagree</Button>
-          <Button>Agree</Button>
-        </DialogActions> */}
       </Dialog>
+      <Snackbar
+        open={snackbar}
+        autoHideDuration={5000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        key={'bottom' + 'right'}
+      >
+        <Alert onClose={handleCloseSnackbar} severity="success" sx={{ width: '100%' }}>
+          {'Successfully Room Created!'}
+        </Alert>
+      </Snackbar>
     </Stack>
   );
 };

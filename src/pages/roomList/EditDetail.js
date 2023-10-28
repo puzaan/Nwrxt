@@ -7,8 +7,11 @@ import PropTypes from 'prop-types';
 export const EditDetail = ({ index }) => {
   const navigate = useNavigate();
   console.log(index);
-  const handleEditClick = () => {
-    navigate('/', { replace: true });
+  const handleEditClick = (id) => {
+    if (window.confirm('Are you sure' + id)) {
+      console.log(id);
+      navigate('/', { replace: true });
+    }
   };
 
   EditDetail.propTypes = {
@@ -17,7 +20,7 @@ export const EditDetail = ({ index }) => {
   return (
     <FormControlLabel
       control={
-        <IconButton color="secondary" aria-label="add an alarm" onClick={handleEditClick}>
+        <IconButton color="secondary" aria-label="add an alarm" onClick={() => handleEditClick(index)}>
           <EditIcon />
         </IconButton>
       }
