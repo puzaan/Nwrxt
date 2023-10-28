@@ -9,18 +9,9 @@ import CardMedia from '@mui/material/CardMedia';
 import CardContent from '@mui/material/CardContent';
 import CardActions from '@mui/material/CardActions';
 import CloseIcon from '@mui/icons-material/Close';
+import { Link } from 'react-router-dom';
 
-import {
-  // Avatar, Stack, Table, TableBody, TableCell, TableHead, TablePagination, TableRow,
-  Box,
-  Typography,
-  Stack,
-  Alert,
-  Collapse,
-  AlertTitle,
-  IconButton,
-  Chip
-} from '@mui/material';
+import { Box, Typography, Stack, Alert, Collapse, AlertTitle, IconButton, Chip } from '@mui/material';
 import { useDeleteRoomByIdMutation } from 'store/reducers/room';
 import Loder from 'components/Loder/Loder';
 
@@ -173,7 +164,9 @@ export const RoomTable = (props) => {
                   </Typography>
                 </Box>
                 <CardActions sx={{ justifyContent: 'flex-end' }}>
-                  <Button variant="outlined">Update</Button>
+                  <Button component={Link} to={`/room-update/${item.id}`} variant="outlined">
+                    Update
+                  </Button>
                   <Button onClick={() => deleteRooms(item.id)}>Delete</Button>
                 </CardActions>
               </CardContent>

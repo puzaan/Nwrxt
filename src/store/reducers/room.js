@@ -14,7 +14,7 @@ export const roomServiceApi = createApi({
 
     getRoomById: builder.query({
       query: (query) => ({
-        url: `/room/${query.id}`
+        url: `/room/${query}`
       }),
       providesTags: ['room']
     }),

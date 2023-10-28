@@ -19,7 +19,7 @@ const Shadow = Loadable(lazy(() => import('pages/components-overview/Shadow')));
 const AntIcons = Loadable(lazy(() => import('pages/components-overview/AntIcons')));
 const RoomView = Loadable(lazy(() => import('pages/roomList/RoomView')));
 const Account = Loadable(lazy(() => import('pages/account/Account')));
-
+const RoomUpdate = Loadable(lazy(() => import('pages/roomUpdate/RoomUpdate')));
 // ==============================|| MAIN ROUTING ||============================== //
 
 const MainRoutes = {
@@ -50,6 +50,10 @@ const MainRoutes = {
     {
       path: 'room-view',
       element: <RoomView />
+    },
+    {
+      path: 'room-update/:id',
+      element: <RoomUpdate />
     },
     {
       path: 'account-view',
