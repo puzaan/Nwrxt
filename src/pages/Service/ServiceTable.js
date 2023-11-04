@@ -2,9 +2,15 @@ import PropTypes from 'prop-types';
 import { useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 
+import { useGetAllHouseServicesQuery, useDeleteHouseServiceByIdMutation } from 'store/reducers/house';
+import Loder from 'components/Loder/Loder';
+
 // material-ui
 import {
   Box,
+  Collapse,
+  Alert,
+  AlertTitle,
   IconButton,
   Link,
   Stack,
@@ -18,6 +24,8 @@ import {
   Typography
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
+import CreateIcon from '@mui/icons-material/Create';
+import CloseIcon from '@mui/icons-material/Close';
 
 // third-party
 import NumberFormat from 'react-number-format';
@@ -30,14 +38,14 @@ function createData(trackingNo, name, fat, carbs, protein) {
 }
 
 const rows = [
-  createData(84564564, 'Camera Lens', 40, 2, 40570),
+  createData(84564564, 'Camera Lens', 40, 1, 40570),
   createData(98764564, 'Laptop', 300, 0, 180139),
-  createData(98756325, 'Mobile', 355, 1, 90989),
+  createData(98756325, 'Mobile', 355, 0, 90989),
   createData(98652366, 'Handset', 50, 1, 10239),
   createData(13286564, 'Computer Accessories', 100, 1, 83348),
   createData(86739658, 'TV', 99, 0, 410780),
-  createData(13256498, 'Keyboard', 125, 2, 70999),
-  createData(98753263, 'Mouse', 89, 2, 10570),
+  createData(13256498, 'Keyboard', 125, 0, 70999),
+  createData(98753263, 'Mouse', 89, 1, 10570),
   createData(98753275, 'Desktop', 185, 1, 98063),
   createData(98753291, 'Chair', 100, 0, 14001)
 ];
@@ -72,22 +80,22 @@ const rows = [
 
 const headCells = [
   {
-    id: 'trackingNo',
+    id: 'id',
     align: 'left',
     disablePadding: false,
-    label: 'Tracking No.'
+    label: 'Id'
   },
   {
-    id: 'name',
+    id: 'houseServiceType',
     align: 'left',
     disablePadding: true,
-    label: 'Product Name'
+    label: 'Service Type'
   },
   {
-    id: 'fat',
+    id: 'price',
     align: 'right',
     disablePadding: false,
-    label: 'Total Order'
+    label: 'Price'
   },
   {
     id: 'carbs',
@@ -96,12 +104,7 @@ const headCells = [
 
     label: 'Status'
   },
-  {
-    id: 'protein',
-    align: 'right',
-    disablePadding: false,
-    label: 'Total Amount'
-  },
+
   {
     id: 'action',
     align: 'right',
@@ -138,22 +141,22 @@ OrderTableHead.propTypes = {
 
 // ==============================|| ORDER TABLE - STATUS ||============================== //
 
-const OrderStatus = ({ status }) => {
+const AvilableStatus = ({ status }) => {
   let color;
   let title;
 
   switch (status) {
     case 0:
-      color = 'warning';
-      title = 'Pending';
+      color = 'error';
+      title = 'Not-Avilable';
       break;
     case 1:
       color = 'success';
-      title = 'Approved';
+      title = 'Avilable';
       break;
     case 2:
-      color = 'error';
-      title = 'Rejected';
+      color = 'warning';
+      title = 'Pending';
       break;
     default:
       color = 'primary';
@@ -168,31 +171,37 @@ const OrderStatus = ({ status }) => {
   );
 };
 
-OrderStatus.propTypes = {
+AvilableStatus.propTypes = {
   status: PropTypes.number
 };
 
 // ==============================|| ORDER TABLE ||============================== //
 
-const MatDelete = () => {
-  const handleDeleteClick = () => {
-    console.log('deleted');
+const MatUpdate = ({ id }) => {
+  const handleUpdateClick = () => {
+    console.log('update' + id);
   };
 
   return (
-    <IconButton color="secondary" aria-label="add an alarm" onClick={() => handleDeleteClick()}>
-      <DeleteIcon />
+    <IconButton color="secondary" aria-label="add an alarm" onClick={() => handleUpdateClick()}>
+      <CreateIcon />
     </IconButton>
   );
+};
+MatUpdate.propTypes = {
+  id: PropTypes.number
 };
 
 export default function ServiceTable() {
   const [order] = useState('asc');
   const [orderBy] = useState('trackingNo');
   const [selected] = useState([]);
+  const [open, setOpen] = useState(true);
 
   const [pg, setpg] = useState(0);
   const [rpg, setrpg] = useState(5);
+
+  const { data, isLoading, isError, error, isSuccess } = useGetAllHouseServicesQuery();
 
   function handleChangePage(event, newpage) {
     setpg(newpage);
@@ -204,77 +213,148 @@ export default function ServiceTable() {
   }
 
   const isSelected = (trackingNo) => selected.indexOf(trackingNo) !== -1;
+  const [deleteHouseServiceByid, { isError: serviceIsError, error: serviceError, isSuccess: serviceIsSuccess }] =
+    useDeleteHouseServiceByIdMutation();
+
+  const handleDeleteClick = async (id) => {
+    if (window.confirm('Are you sure')) {
+      await deleteHouseServiceByid({
+        id: id
+      });
+    }
+  };
+
+  if (serviceIsSuccess) {
+    window.location.reload();
+  }
+  if (serviceIsError) {
+    setTimeout(() => {
+      setOpen(false);
+    }, 5000);
+  }
 
   return (
     <Box>
-      <TableContainer
-        sx={{
-          width: '100%',
-          overflowX: 'auto',
-          position: 'relative',
-          display: 'block',
-          maxWidth: '100%',
-          '& td, & th': { whiteSpace: 'nowrap' }
-        }}
-      >
-        <Table
-          aria-labelledby="tableTitle"
+      {serviceIsError && (
+        <Stack sx={{ width: '100%', marginBottom: 4 }} spacing={2}>
+          <Collapse in={open}>
+            <Alert
+              action={
+                <IconButton
+                  aria-label="close"
+                  color="inherit"
+                  size="small"
+                  onClick={() => {
+                    setOpen(false);
+                  }}
+                >
+                  <CloseIcon fontSize="inherit" />
+                </IconButton>
+              }
+              sx={{ mb: 2 }}
+              severity="error"
+            >
+              <AlertTitle>Error</AlertTitle>
+              {serviceError.data.message}
+              <strong>Try Again!!</strong>
+            </Alert>
+          </Collapse>
+        </Stack>
+      )}
+      {isError && (
+        <Stack sx={{ width: '100%', marginBottom: 4 }} spacing={2}>
+          <Alert severity="error">
+            <AlertTitle>Error</AlertTitle>
+            {error.data.message}
+            <strong>Try Again!!</strong>
+          </Alert>
+        </Stack>
+      )}
+      {isLoading && (
+        <Box
           sx={{
-            '& .MuiTableCell-root:first-of-type': {
-              pl: 2
-            },
-            '& .MuiTableCell-root:last-of-type': {
-              pr: 3
-            }
+            display: 'flex',
+            justifyContent: 'center',
+            marginBottom: 3
           }}
         >
-          <OrderTableHead order={order} orderBy={orderBy} />
-          <TableBody>
-            {rows.slice(pg * rpg, pg * rpg + rpg).map((row, index) => {
-              const isItemSelected = isSelected(row.trackingNo);
-              const labelId = `enhanced-table-checkbox-${index}`;
+          <Loder type="spin" color="#00BFFF" width="15%" height="2%" />
+        </Box>
+      )}
+      {isSuccess && (
+        <>
+          <TableContainer
+            sx={{
+              width: '100%',
+              overflowX: 'auto',
+              position: 'relative',
+              display: 'block',
+              maxWidth: '100%',
+              '& td, & th': { whiteSpace: 'nowrap' }
+            }}
+          >
+            <Table
+              aria-labelledby="tableTitle"
+              sx={{
+                '& .MuiTableCell-root:first-of-type': {
+                  pl: 2
+                },
+                '& .MuiTableCell-root:last-of-type': {
+                  pr: 3
+                }
+              }}
+            >
+              <OrderTableHead order={order} orderBy={orderBy} />
+              <TableBody>
+                {data.data.slice(pg * rpg, pg * rpg + rpg).map((row, index) => {
+                  const isItemSelected = isSelected(row.id);
+                  const labelId = `enhanced-table-checkbox-${index}`;
 
-              return (
-                <TableRow
-                  hover
-                  role="checkbox"
-                  sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                  aria-checked={isItemSelected}
-                  tabIndex={-1}
-                  key={row.trackingNo}
-                  selected={isItemSelected}
-                >
-                  <TableCell component="th" id={labelId} scope="row" align="left">
-                    <Link color="secondary" component={RouterLink} to="">
-                      {row.trackingNo}
-                    </Link>
-                  </TableCell>
-                  <TableCell align="left">{row.name}</TableCell>
-                  <TableCell align="right">{row.fat}</TableCell>
-                  <TableCell align="left">
-                    <OrderStatus status={row.carbs} />
-                  </TableCell>
-                  <TableCell align="right">
-                    <NumberFormat value={row.protein} displayType="text" thousandSeparator prefix="$" />
-                  </TableCell>
-                  <TableCell align="right">
-                    <MatDelete />
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
-      </TableContainer>
-      <TablePagination
-        rowsPerPageOptions={[5, 10, 25]}
-        component="div"
-        count={rows.length}
-        rowsPerPage={rpg}
-        page={pg}
-        onPageChange={handleChangePage}
-        onRowsPerPageChange={handleChangeRowsPerPage}
-      />
+                  return (
+                    <TableRow
+                      hover
+                      role="checkbox"
+                      sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                      aria-checked={isItemSelected}
+                      tabIndex={-1}
+                      key={row.id}
+                      selected={isItemSelected}
+                    >
+                      <TableCell component="th" id={labelId} scope="row" align="left">
+                        <Link color="secondary" component={RouterLink} to="">
+                          {row.id}
+                        </Link>
+                      </TableCell>
+                      <TableCell align="left">{row.houseServiceType}</TableCell>
+                      <TableCell align="right">
+                        <NumberFormat value={row.price} displayType="text" thousandSeparator prefix="$" />
+                      </TableCell>
+                      <TableCell align="left">
+                        <AvilableStatus status={row.carbs} />
+                      </TableCell>
+                      <TableCell align="right">
+                        <IconButton color="secondary" aria-label="add an alarm" onClick={() => handleDeleteClick(row.id)}>
+                          <DeleteIcon />
+                        </IconButton>
+                        <MatUpdate id={row.id} />
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </TableContainer>
+          <TablePagination
+            rowsPerPageOptions={[5, 10, 25]}
+            component="div"
+            count={rows.length}
+            rowsPerPage={rpg}
+            page={pg}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+          />
+        </>
+      )}
     </Box>
   );
 }

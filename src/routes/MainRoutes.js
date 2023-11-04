@@ -9,7 +9,7 @@ import MainLayout from 'layout/MainLayout';
 const DashboardDefault = Loadable(lazy(() => import('pages/dashboard')));
 
 // render - sample page
-const SamplePage = Loadable(lazy(() => import('pages/extra-pages/SamplePage')));
+// const SamplePage = Loadable(lazy(() => import('pages/extra-pages/SamplePage')));
 
 // render - utilities
 const Service = Loadable(lazy(() => import('pages/Service/Services')));
@@ -59,10 +59,10 @@ const MainRoutes = {
       path: 'account-view',
       element: <Account />
     },
-    {
-      path: 'sample-page',
-      element: <SamplePage />
-    },
+    // {
+    //   path: 'sample-page',
+    //   element: <SamplePage />
+    // },
     {
       path: 'shadow',
       element: <Shadow />

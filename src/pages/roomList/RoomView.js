@@ -1,5 +1,3 @@
-// import { useEffect, useState } from 'react';
-
 import { Grid, Alert, Box, AlertTitle, Stack } from '@mui/material';
 
 import { Header } from './Header';
@@ -10,7 +8,7 @@ import Loder from 'components/Loder/Loder';
 
 const RoomView = () => {
   const { data, isLoading, isError, error, isSuccess } = useGetAllRoomsQuery();
-
+  // location.reload();
   return (
     <Grid container rowSpacing={4.5} columnSpacing={2.75}>
       <Grid item xs={12} md={12} lg={12} sx={{ mb: -2.25 }}>

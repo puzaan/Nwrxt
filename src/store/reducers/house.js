@@ -7,10 +7,8 @@ export const houseServiceApi = createApi({
   baseQuery: fetchBaseQuery({ baseUrl: baseUrl }),
   tagTypes: ['houseService'],
   endpoints: (builder) => ({
-    getAllHouseService: builder.query({
-      query: () => ({
-        url: '/house/service/list'
-      }),
+    getAllHouseServices: builder.query({
+      query: () => '/house/service/list',
       providesTags: ['houseService']
     }),
     getHouseServiceById: builder.query({
@@ -27,7 +25,7 @@ export const houseServiceApi = createApi({
       }),
       invalidatesTages: ['houseService']
     }),
-    deleteHouseServiceByid: builder.mutation({
+    deleteHouseServiceById: builder.mutation({
       query: (query) => ({
         url: `/house/service/${query.id}`,
         method: 'DELETE'
@@ -45,5 +43,10 @@ export const houseServiceApi = createApi({
   })
 });
 
-export const { useDeleteHouseServiceByIdQuery, useCreateHouseServiceQuery, useGetHouseServiceByIdQuery, useGetAllHouseServicesQuery } =
-  houseServiceApi;
+export const {
+  useDeleteHouseServiceByIdMutation,
+  updateHouseServiceByIdMutation,
+  useCreateHouseServiceMutation,
+  useGetHouseServiceByIdQuery,
+  useGetAllHouseServicesQuery
+} = houseServiceApi;

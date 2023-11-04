@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 
 import { Button, Box, Alert, AlertTitle, Collapse, Stack, IconButton, TextField, Grid, Divider, MenuItem, Typography } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -16,7 +16,19 @@ const RoomUpdate = () => {
   const navigate = useNavigate();
 
   const { data, isError: getIsError, isSuccess: getIsSuccess, error: getError, isLoading: getLoading } = useGetRoomByIdQuery(id);
-  const [updateRoomById, { isError: updateIsError, error: updateError, isLoading: updateLoading }] = useUpdateRoomByIdMutation();
+  const [updateRoomById, { isError: updateIsError, error: updateError, isLoading: updateLoading, isSuccess }] = useUpdateRoomByIdMutation();
+
+  useEffect(() => {
+    if (getIsError) {
+      navigate(-1);
+    }
+    // eslint-disable-next-line
+  }, [getIsError]);
+  useEffect(() => {
+    if (isSuccess) {
+      navigate('/room-view', { replace: true });
+    }
+  });
 
   const RegisterSchema = Yup.object().shape({
     roomId: Yup.string().required('Room ID is required'),
@@ -43,7 +55,7 @@ const RoomUpdate = () => {
       };
       try {
         await updateRoomById({ body: savedata });
-        navigate(-1);
+        // navigate(-1);
       } catch (err) {
         console.log(err);
       }
