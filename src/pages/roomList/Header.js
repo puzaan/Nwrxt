@@ -45,6 +45,7 @@ export const Header = () => {
     setOpen(true);
   };
   const handleClose = () => {
+    formik.resetForm();
     setOpen(false);
   };
 

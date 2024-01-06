@@ -20,8 +20,8 @@ export const houseServiceApi = createApi({
     createHouseService: builder.mutation({
       query: (query) => ({
         url: '/house/service/save',
-        body: query.body,
-        method: 'POST'
+        method: 'POST',
+        body: query.body
       }),
       invalidatesTages: ['houseService']
     }),
@@ -45,7 +45,7 @@ export const houseServiceApi = createApi({
 
 export const {
   useDeleteHouseServiceByIdMutation,
-  updateHouseServiceByIdMutation,
+  useUpdateHouseServiceByIdMutation,
   useCreateHouseServiceMutation,
   useGetHouseServiceByIdQuery,
   useGetAllHouseServicesQuery

@@ -1,9 +1,5 @@
+import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
-import { useState } from 'react';
-import { Link as RouterLink } from 'react-router-dom';
-
-import { useGetAllHouseServicesQuery, useDeleteHouseServiceByIdMutation } from 'store/reducers/house';
-import Loder from 'components/Loder/Loder';
 
 // material-ui
 import {
@@ -21,7 +17,16 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Typography
+  Typography,
+  DialogTitle,
+  Slide,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  TextField,
+  MenuItem,
+  Snackbar
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CreateIcon from '@mui/icons-material/Create';
@@ -29,71 +34,34 @@ import CloseIcon from '@mui/icons-material/Close';
 
 // third-party
 import NumberFormat from 'react-number-format';
+import { useFormik, Form, FormikProvider } from 'formik';
+import * as Yup from 'yup';
+import { Link as RouterLink } from 'react-router-dom';
 
 // project import
 import Dot from 'components/@extended/Dot';
+import Loder from 'components/Loder/Loder';
+import { useGetAllHouseServicesQuery, useUpdateHouseServiceByIdMutation, useDeleteHouseServiceByIdMutation } from 'store/reducers/house';
 
-function createData(trackingNo, name, fat, carbs, protein) {
-  return { trackingNo, name, fat, carbs, protein };
-}
-
-const rows = [
-  createData(84564564, 'Camera Lens', 40, 1, 40570),
-  createData(98764564, 'Laptop', 300, 0, 180139),
-  createData(98756325, 'Mobile', 355, 0, 90989),
-  createData(98652366, 'Handset', 50, 1, 10239),
-  createData(13286564, 'Computer Accessories', 100, 1, 83348),
-  createData(86739658, 'TV', 99, 0, 410780),
-  createData(13256498, 'Keyboard', 125, 0, 70999),
-  createData(98753263, 'Mouse', 89, 1, 10570),
-  createData(98753275, 'Desktop', 185, 1, 98063),
-  createData(98753291, 'Chair', 100, 0, 14001)
-];
-
-// function descendingComparator(a, b, orderBy) {
-//   if (b[orderBy] < a[orderBy]) {
-//     return -1;
-//   }
-//   if (b[orderBy] > a[orderBy]) {
-//     return 1;
-//   }
-//   return 0;
-// }
-
-// function getComparator(order, orderBy) {
-//   return order === 'desc' ? (a, b) => descendingComparator(a, b, orderBy) : (a, b) => -descendingComparator(a, b, orderBy);
-// }
-
-// function stableSort(array, comparator) {
-//   const stabilizedThis = array.map((el, index) => [el, index]);
-//   stabilizedThis.sort((a, b) => {
-//     const order = comparator(a[0], b[0]);
-//     if (order !== 0) {
-//       return order;
-//     }
-//     return a[1] - b[1];
-//   });
-//   return stabilizedThis.map((el) => el[0]);
-// }
-
-// ==============================|| ORDER TABLE - HEADER CELL ||============================== //
-
+const Transition = React.forwardRef(function Transition(props, ref) {
+  return <Slide direction="up" ref={ref} {...props} />;
+});
 const headCells = [
   {
     id: 'id',
-    align: 'left',
+    align: 'center',
     disablePadding: false,
     label: 'Id'
   },
   {
     id: 'houseServiceType',
-    align: 'left',
+    align: 'center',
     disablePadding: true,
     label: 'Service Type'
   },
   {
     id: 'price',
-    align: 'right',
+    align: 'center',
     disablePadding: false,
     label: 'Price'
   },
@@ -101,31 +69,25 @@ const headCells = [
     id: 'carbs',
     align: 'left',
     disablePadding: false,
-
     label: 'Status'
   },
 
   {
     id: 'action',
-    align: 'right',
+    align: 'center',
     disablePadding: false,
     label: 'Action'
   }
 ];
 
-// ==============================|| ORDER TABLE - HEADER ||============================== //
+// ==============================|| Service TABLE - HEADER ||============================== //
 
-function OrderTableHead() {
+function ServiceTableHead() {
   return (
     <TableHead>
       <TableRow>
         {headCells.map((headCell) => (
-          <TableCell
-            key={headCell.id}
-            align={headCell.align}
-            padding={headCell.disablePadding ? 'none' : 'normal'}
-            // sortDirection={orderBy === headCell.id ? order : false}
-          >
+          <TableCell key={headCell.id} align={headCell.align} padding={headCell.disablePadding ? 'none' : 'normal'}>
             {headCell.label}
           </TableCell>
         ))}
@@ -134,37 +96,32 @@ function OrderTableHead() {
   );
 }
 
-OrderTableHead.propTypes = {
-  order: PropTypes.string,
-  orderBy: PropTypes.string
-};
-
-// ==============================|| ORDER TABLE - STATUS ||============================== //
+// ==============================|| SERVICE TABLE - STATUS ||============================== //
 
 const AvilableStatus = ({ status }) => {
   let color;
   let title;
 
   switch (status) {
-    case 0:
+    case false:
       color = 'error';
       title = 'Not-Avilable';
       break;
-    case 1:
+    case true:
       color = 'success';
       title = 'Avilable';
       break;
-    case 2:
-      color = 'warning';
-      title = 'Pending';
-      break;
+    // case 2:
+    //   color = 'warning';
+    //   title = 'Pending';
+    //   break;
     default:
       color = 'primary';
       title = 'None';
   }
 
   return (
-    <Stack direction="row" spacing={1} alignItems="center">
+    <Stack direction="row" spacing={1} alignItems="center" align="center">
       <Dot color={color} />
       <Typography>{title}</Typography>
     </Stack>
@@ -172,25 +129,25 @@ const AvilableStatus = ({ status }) => {
 };
 
 AvilableStatus.propTypes = {
-  status: PropTypes.number
+  status: PropTypes.bool
 };
 
 // ==============================|| ORDER TABLE ||============================== //
 
-const MatUpdate = ({ id }) => {
-  const handleUpdateClick = () => {
-    console.log('update' + id);
-  };
+// const MatUpdate = ({ id }) => {
+//   const handleUpdateClick = () => {
+//     console.log('update' + id);
+//   };
 
-  return (
-    <IconButton color="secondary" aria-label="add an alarm" onClick={() => handleUpdateClick()}>
-      <CreateIcon />
-    </IconButton>
-  );
-};
-MatUpdate.propTypes = {
-  id: PropTypes.number
-};
+//   return (
+//     <IconButton color="secondary" aria-label="add an alarm" onClick={() => handleUpdateClick()}>
+//       <CreateIcon />
+//     </IconButton>
+//   );
+// };
+// MatUpdate.propTypes = {
+//   id: PropTypes.number
+// };
 
 export default function ServiceTable() {
   const [order] = useState('asc');
@@ -198,11 +155,24 @@ export default function ServiceTable() {
   const [selected] = useState([]);
   const [open, setOpen] = useState(true);
 
+  const [serviceName, setServiceName] = useState('');
+  const [price, setPrice] = useState();
+  const [isActive, setIsActive] = useState();
+  const [id, setId] = useState('');
+
+  //table set value
   const [pg, setpg] = useState(0);
   const [rpg, setrpg] = useState(5);
 
-  const { data, isLoading, isError, error, isSuccess } = useGetAllHouseServicesQuery();
+  //dailog box
+  const [dailogOpen, setDailogOpen] = useState(false);
+  const [snackbar, setSnackbar] = useState(false);
 
+  const { data, isLoading, isError, error, isSuccess } = useGetAllHouseServicesQuery();
+  const [updateHouseServiceById, { isLoading: isUpdateLoading, isError: isUpdateError, error: updateError, isSuccess: isUpdateSuccess }] =
+    useUpdateHouseServiceByIdMutation();
+  const [deleteHouseServiceByid, { isError: serviceIsError, error: serviceError, isSuccess: serviceIsSuccess }] =
+    useDeleteHouseServiceByIdMutation();
   function handleChangePage(event, newpage) {
     setpg(newpage);
   }
@@ -213,8 +183,6 @@ export default function ServiceTable() {
   }
 
   const isSelected = (trackingNo) => selected.indexOf(trackingNo) !== -1;
-  const [deleteHouseServiceByid, { isError: serviceIsError, error: serviceError, isSuccess: serviceIsSuccess }] =
-    useDeleteHouseServiceByIdMutation();
 
   const handleDeleteClick = async (id) => {
     if (window.confirm('Are you sure')) {
@@ -223,6 +191,62 @@ export default function ServiceTable() {
       });
     }
   };
+
+  const handleUpdateClick = (row) => {
+    setServiceName(row.houseServiceType);
+    setPrice(row.price);
+    setIsActive(row.isActive);
+    setId(row.id);
+    setDailogOpen(true);
+  };
+  const handleCloseSnackbar = () => {
+    setSnackbar(false);
+  };
+  const handleClose = () => {
+    formik.resetForm();
+    setDailogOpen(false);
+  };
+
+  const ServiceUpdateSchema = Yup.object().shape({
+    houseServiceType: Yup.string().required(' Service Name is required'),
+    price: Yup.number().required('House Service Price is required'),
+    isActive: Yup.bool().required('House Service isActive is required')
+  });
+
+  const formik = useFormik({
+    initialValues: {
+      houseServiceType: serviceName,
+      price: price,
+      isActive: isActive
+    },
+    validationSchema: ServiceUpdateSchema,
+    onSubmit: async () => {
+      const savedata = {
+        houseServiceType: formik.values.houseServiceType,
+        price: formik.values.price,
+        id: id,
+        isActive: formik.values.isActive
+      };
+      try {
+        await updateHouseServiceById({ body: savedata });
+      } catch (err) {
+        console.log(err);
+      }
+    }
+  });
+
+  if (isUpdateError) {
+    console.log(error.data);
+  }
+
+  useEffect(() => {
+    if (isUpdateSuccess) {
+      handleClose();
+      setSnackbar(true);
+      window.location.reload();
+    }
+  }, [isUpdateSuccess]);
+  const { errors, touched, handleSubmit, getFieldProps } = formik;
 
   if (serviceIsSuccess) {
     window.location.reload();
@@ -304,7 +328,7 @@ export default function ServiceTable() {
                 }
               }}
             >
-              <OrderTableHead order={order} orderBy={orderBy} />
+              <ServiceTableHead order={order} orderBy={orderBy} />
               <TableBody>
                 {data.data.slice(pg * rpg, pg * rpg + rpg).map((row, index) => {
                   const isItemSelected = isSelected(row.id);
@@ -320,23 +344,25 @@ export default function ServiceTable() {
                       key={row.id}
                       selected={isItemSelected}
                     >
-                      <TableCell component="th" id={labelId} scope="row" align="left">
+                      <TableCell component="th" id={labelId} scope="row" align="center">
                         <Link color="secondary" component={RouterLink} to="">
                           {row.id}
                         </Link>
                       </TableCell>
-                      <TableCell align="left">{row.houseServiceType}</TableCell>
-                      <TableCell align="right">
-                        <NumberFormat value={row.price} displayType="text" thousandSeparator prefix="$" />
+                      <TableCell align="center">{row.houseServiceType}</TableCell>
+                      <TableCell align="center">
+                        <NumberFormat value={row.price} displayType="text" thousandSeparator prefix="RS:" />
                       </TableCell>
-                      <TableCell align="left">
-                        <AvilableStatus status={row.carbs} />
+                      <TableCell align="center">
+                        <AvilableStatus status={row.isActive} />
                       </TableCell>
-                      <TableCell align="right">
+                      <TableCell align="center">
                         <IconButton color="secondary" aria-label="add an alarm" onClick={() => handleDeleteClick(row.id)}>
                           <DeleteIcon />
                         </IconButton>
-                        <MatUpdate id={row.id} />
+                        <IconButton color="secondary" aria-label="add an alarm" onClick={() => handleUpdateClick(row)}>
+                          <CreateIcon />
+                        </IconButton>
                       </TableCell>
                     </TableRow>
                   );
@@ -347,7 +373,7 @@ export default function ServiceTable() {
           <TablePagination
             rowsPerPageOptions={[5, 10, 25]}
             component="div"
-            count={rows.length}
+            count={data.data.length}
             rowsPerPage={rpg}
             page={pg}
             onPageChange={handleChangePage}
@@ -355,6 +381,107 @@ export default function ServiceTable() {
           />
         </>
       )}
+
+      <Dialog
+        open={dailogOpen}
+        TransitionComponent={Transition}
+        keepMounted
+        onClose={handleClose}
+        aria-describedby="alert-dialog-slide-description"
+        sx={{ backdropFilter: 'blur(5px)' }}
+      >
+        <DialogTitle>
+          <Typography align="center">Update Service Detail</Typography>
+        </DialogTitle>
+        <DialogContent>
+          <FormikProvider value={formik}>
+            {isUpdateError && (
+              <Stack sx={{ width: '100%', marginBottom: 4 }} spacing={2}>
+                <Alert severity="error">
+                  <AlertTitle>Error</AlertTitle>
+                  {updateError.data.data}
+                  <strong>Try Again!!</strong>
+                </Alert>
+              </Stack>
+            )}
+            <Form autoComplete="off" noValidateon Submit={handleSubmit}>
+              <Stack spacing={3} marginTop={2}>
+                <Stack>
+                  <TextField
+                    fullWidth
+                    label={serviceName}
+                    {...getFieldProps('houseServiceType')}
+                    error={Boolean(touched.houseServiceType && errors.houseServiceType)}
+                    helperText={touched.houseServiceType && errors.houseServiceType}
+                  />
+                </Stack>
+                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+                  <TextField
+                    fullWidth
+                    type="number"
+                    label={price}
+                    {...getFieldProps('price')}
+                    error={Boolean(touched.price && errors.price)}
+                    helperText={touched.price && errors.price}
+                  />
+                </Stack>
+                <TextField
+                  select
+                  label={'Service Active :' + isActive}
+                  variant="outlined"
+                  name={'isActive'}
+                  fullWidth
+                  value={formik.values.isActive}
+                  onChange={formik.handleChange}
+                  error={Boolean(touched.isActive && errors.isActive)}
+                  helperText={touched.isActive && errors.isActive}
+                >
+                  {[true, false].map((option) => (
+                    <MenuItem key={option} value={option}>
+                      {option.toString()}
+                    </MenuItem>
+                  ))}
+                  {/* <MenuItem key={'True'} value={true}>
+                    {option}
+                  </MenuItem>
+                  <MenuItem key={'True'} value={true}>
+                    {option}
+                  </MenuItem> */}
+                </TextField>
+
+                {isUpdateLoading && (
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'center',
+                      marginBottom: 3
+                    }}
+                  >
+                    <Loder type="spin" color="#00BFFF" width="15%" height="2%" />
+                  </Box>
+                )}
+              </Stack>
+              <DialogActions>
+                <Button type="submit" variant="contained" color="primary" disable={isLoading}>
+                  Update
+                </Button>
+                <Button onClick={handleClose}>Close</Button>
+              </DialogActions>
+            </Form>
+          </FormikProvider>
+        </DialogContent>
+      </Dialog>
+      <Snackbar
+        open={snackbar}
+        autoHideDuration={5000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        key={'bottom' + 'right'}
+      >
+        <Alert onClose={handleCloseSnackbar} severity="success" sx={{ width: '100%' }}>
+          {'Successfully House Service Created!'}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

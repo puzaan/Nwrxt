@@ -15,7 +15,9 @@ import {
   MenuItem,
   Stack,
   TextField,
-  Typography
+  Typography,
+  AlertTitle,
+  Alert
 } from '@mui/material';
 
 // project import
@@ -38,6 +40,7 @@ import avatar3 from 'assets/images/users/avatar-3.png';
 import avatar4 from 'assets/images/users/avatar-4.png';
 
 import { useGetAllRoomsQuery } from 'store/reducers/room';
+import { useGetAllHouseServicesQuery } from 'store/reducers/house';
 
 // avatar style
 const avatarSX = {
@@ -78,13 +81,28 @@ const DashboardDefault = () => {
   const [value, setValue] = useState('today');
   const [slot, setSlot] = useState('week');
 
-  const { data, isLoading: roomLoading } = useGetAllRoomsQuery();
-  if (!roomLoading) {
-    console.log(data);
-  }
-
+  const { data, isLoading: roomLoading, isError: isRoomError, error: RoomError } = useGetAllRoomsQuery();
+  const { data: serviceData, isLoading: serviceLoading, isError: isServiceError, error: serviceError } = useGetAllHouseServicesQuery();
   return (
     <Grid container rowSpacing={4.5} columnSpacing={2.75}>
+      {isRoomError && (
+        <Stack sx={{ width: '100%', marginBottom: 4 }} spacing={2}>
+          <Alert severity="error">
+            <AlertTitle>Error</AlertTitle>
+            {RoomError.data}
+            <strong>Try Again!!</strong>
+          </Alert>
+        </Stack>
+      )}
+      {isServiceError && (
+        <Stack sx={{ width: '100%', marginBottom: 4 }} spacing={2}>
+          <Alert severity="error">
+            <AlertTitle>Error</AlertTitle>
+            {serviceError.data}
+            <strong>Try Again!!</strong>
+          </Alert>
+        </Stack>
+      )}
       {/* row 1 */}
       <Grid item xs={12} sx={{ mb: -2.25 }}>
         <Typography variant="h5">Dashboard</Typography>
@@ -93,14 +111,22 @@ const DashboardDefault = () => {
         <UserCard title="Total User" count={442236} link="/" />
       </Grid>
       <Grid item xs={12} sm={6} md={4} lg={3}>
-        <ServiceCard title="Total House Services" count={4000} link="/service" />
+        {serviceLoading ? (
+          <Stack justifyContent="center" alignItems="center">
+            <Loder type="spinningBubbles" width="50px" height="50px" color="#434343" />
+          </Stack>
+        ) : (
+          <ServiceCard title="Total Service" count={serviceData.data.length} link="/service" />
+        )}
       </Grid>
       <Grid item xs={12} sm={6} md={4} lg={3}>
         <BillCard title="Unpaid Bill List" count={100} link="/" />
       </Grid>
       <Grid item xs={12} sm={6} md={4} lg={3}>
         {roomLoading ? (
-          <Loder type="spinningBubbles" width="50px" height="50px" color="#434343" />
+          <Stack justifyContent="center" alignItems="center">
+            <Loder type="spinningBubbles" width="50px" height="50px" color="#434343" />
+          </Stack>
         ) : (
           <RoomCard title="Total Rooms" count={data.data.length} link="/room-view" />
         )}
